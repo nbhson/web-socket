@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 
-const server = new WebSocket.Server({ port: 8080 });
-// const server = new WebSocket('ws://192.168.1.12:8080');
+// host: '0.0.0.0' using for all ips
+const server = new WebSocket.Server({ port: 8080, host: '0.0.0.0' });
 const clients = [];
 
 server.on('connection', (socket) => {
@@ -17,6 +17,7 @@ server.on('connection', (socket) => {
             console.log('Received JSON:', jsonMessage);
             const response = {
                 ip: jsonMessage.ip,
+                uId: jsonMessage.uId,
                 message: jsonMessage.message,
             };
             clients.forEach(client => {

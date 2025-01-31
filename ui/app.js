@@ -1,10 +1,14 @@
 let socket = null;
+let uId = null;
+let input = null;
 
 document.addEventListener("DOMContentLoaded", async function () {
     const ip = await getIp();
-    wsConnection(ip);
+    input = document.getElementById('message-input');
+    generateUUID();
+    wsConnection(ip, uId);
     wsListenMessage();
-    addMessageEvent(ip);
+    addMessageEvents(ip, uId);
     requestNotification();
 });
 
@@ -19,41 +23,47 @@ async function getIp() {
     }
 }
 
-function addMessageEvent(ip = '') {
+function addMessageEvents(ip = '', uId = '') {
     document.getElementById('send-button').addEventListener('click', function () {
-        const input = document.getElementById('message-input');
         const message = input.value;
-        wsSend(message, ip);
+        wsSend(message, ip, uId);
+    });
+    document.getElementById('message-input').addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            const message = input.value;
+            wsSend(message, ip, uId);
+        }
     });
 }
 
-function displayMessage(message = '', ip = '') {
+function displayMessage(message = '', ip = '', wsuId = '') {
     const chatBox = document.getElementById('chat-box');
     const messageElement = document.createElement('div');
 
-    messageElement.className = ip ? 'my-message' : 'other-message';
+    input.value = '';
+    messageElement.className = ip && (uId === wsuId) ? 'my-message' : 'other-message';
     messageElement.textContent = message;
-
+    
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function wsConnection(ip) {
+function wsConnection(ip, uid) {
     socket = new WebSocket('ws://192.168.1.12:8080');
     socket.addEventListener("open", (event) => {
-        socket.send(JSON.stringify({ ip, message: `New User Join: ${ip}` }));
+        socket.send(JSON.stringify({ ip, message: `New User Join: ${ip} - ${uid}` }));
     });
 }
 
-function wsSend(message = '', ip = '') {
-    socket.send(JSON.stringify({ ip, message }));
+function wsSend(message = '', ip = '', uId = '') {
+    socket.send(JSON.stringify({ ip, message, uId }));
 }
 
 function wsListenMessage() {
     socket.addEventListener("message", (event) => {
         console.log("Message from server ", event.data);
-        const { message, ip } = JSON.parse(event.data);
-        displayMessage(message, ip);
+        const { message, ip, uId } = JSON.parse(event.data);
+        displayMessage(message, ip, uId);
         showNotification(message)
     });
 }
@@ -88,4 +98,12 @@ function showNotification(message) {
     } else {
         console.log("Notification permission denied.");
     }
+}
+
+function generateUUID() {
+    uId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }

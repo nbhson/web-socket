@@ -52,17 +52,22 @@ body {
     flex: 1;
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 24px;
 }
 
 #send-button {
-    padding: 10px 15px;
+    width: 40px;
+    height: 40px;
     margin-left: 10px;
     border: none;
-    border-radius: 5px;
+    border-radius: 24px;
     background-color: #28a745;
     color: white;
     cursor: pointer;
+}
+
+#send-button i {
+    font-size: 18px;
 }
 
 #send-button:hover {
